@@ -1,0 +1,588 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Script file="RavenDKP.lua" />
+        <Button name="RavenDKP_MinimapButtonFrame" toplevel="true" frameStrata="MEDIUM" parent="Minimap" enableMouse="true" movable="true" hidden="false">
+		<Size>
+			<AbsDimension x="33" y="33"/>
+		</Size>
+		<Anchors>
+			<Anchor point="TOPLEFT">
+				<Offset>
+					<AbsDimension x="-18" y="-100"/>
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Layers>
+			<Layer level="BACKGROUND">
+				<Texture name="$parent_Texture" file="Interface\AddOns\RavenDKP\Icon">
+					<Size>
+						<AbsDimension x="17" y="17"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset>
+								<AbsDimension x="8" y="-8"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<TexCoords left="0.075" right="0.925" top="0.075" bottom="0.925"/>
+				</Texture>
+			</Layer>
+		<Layer level="OVERLAY">
+			<Texture file="Interface\Minimap\MiniMap-TrackingBorder">
+				<Size>
+					<AbsDimension x="56" y="56"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT"/>
+				</Anchors>
+			</Texture>
+		</Layer>
+		</Layers>
+		<HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
+		<Scripts>
+			<OnLoad>
+				this:RegisterForClicks("LeftButtonUp")
+				this:RegisterForDrag("RightButton")
+				this:SetClampedToScreen(true)
+			</OnLoad>
+			<OnClick>
+                RavenDKP_MinimapButtonOnClick();
+			</OnClick>
+			<OnDragStart>
+				this:LockHighlight()
+				this:StartMoving()
+			</OnDragStart>
+			<OnDragStop>
+				this:UnlockHighlight()
+				this:StopMovingOrSizing()
+			</OnDragStop>
+			<OnEnter>
+				GameTooltip:SetOwner(this, "ANCHOR_LEFT")
+				GameTooltip:AddLine("RavenDKP", 1, 1, 1)
+				GameTooltip:AddLine("Left click to open UI", 1, 1, 0)
+				GameTooltip:AddLine("Right click and drag to move the button", 1, 1, 0)
+				GameTooltip:Show()
+			</OnEnter>
+			<OnLeave>
+				GameTooltip:Hide();
+			</OnLeave>
+		</Scripts>
+	</Button>
+	
+    <!--	RavenDKP UI Frame	-->
+	<Frame name="RavenDKPUIFrame" parent="UIParent" toplevel="true" hidden="true">
+		<Size>
+			<AbsDimension x="280" y="145" />
+		</Size>
+		<Anchors>
+			<Anchor point="TOPLEFT">
+				<Offset x="312" y="-118" />
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11" />
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="32" />
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32" />
+			</EdgeSize>
+		</Backdrop>
+        <Frames>
+			<!-- Background Image -->
+			<Frame name="BackgroundFrame" frameStrata="BACKGROUND" toplevel="false" enableMouse="true" movable="true">
+				<Size x="258" y="121"/>
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset x="0" y="-12" />
+					</Anchor>
+				</Anchors>
+				<Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+				<EdgeSize val="16"/>
+				</Backdrop>
+		<Layers>
+		<Layer level="ARTWORK">
+			<Texture name="$parentTexture" file="Interface\AddOns\RavenDKP\MainBG.tga">
+				<Size>
+					<AbsDimension x="280" y="145"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentHeaderTexture">
+						<Offset>
+							<AbsDimension x="0" y="0" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<TexCoords left="0" right="0.890625" top="0" bottom="0.828125"/>
+			</Texture>
+		</Layer>
+		</Layers>
+			</Frame>
+			<!-- Auction status row -->
+			<Button name="RavenDKPBidStatusTextButton">
+				<Size>
+					<AbsDimension x="330" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="10" y="-14" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="LEFT" inherits="GameFontNormal">
+							<Size>
+								<AbsDimension x="325" y="23"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="10" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+						<FontString name="$parentPlayer" justifyH="LEFT" inherits="GameFontNormal">
+							<Size>
+								<AbsDimension x="230" y="23"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$parentText">
+									<Offset x="-100" y="0" />
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Button>
+			<!-- Highest bid value row -->
+			<Button name="RavenDKPHighestBidTextButton">
+				<Size>
+					<AbsDimension x="330" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="10" y="-25" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="LEFT" inherits="GameFontNormal">
+							<Size>
+								<AbsDimension x="325" y="23"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="10" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+			</Button>
+			<!-- Highest bidding player row -->
+			<Button name="RavenDKPHighestBidderTextButton">
+				<Size>
+					<AbsDimension x="330" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="10" y="-36" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="LEFT" inherits="GameFontNormal">
+							<Size>
+								<AbsDimension x="325" y="23"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="10" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+			</Button>
+			<!-- This player's total DKP row -->
+			<Button name="RavenDKPPlayerDKPButton">
+				<Size>
+					<AbsDimension x="330" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="10" y="-47" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="LEFT" inherits="GameFontNormal">
+							<Size>
+								<AbsDimension x="325" y="23"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="10" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+			</Button>
+            <!-- Bid input field and button row -->
+			<Button name="RavenDKPBidText">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="5" y="-75" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="LEFT" inherits="GameFontNormal" text="Bid:">
+							<Size>
+								<AbsDimension x="325" y="23"/>
+							</Size>
+							<Anchors>
+								<Anchor point="LEFT">
+									<Offset>
+										<AbsDimension x="15" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<Color r="1" g="1" b="1" />
+						</FontString>
+					</Layer>
+				</Layers>
+			</Button>
+			<EditBox name="RavenDKPBidEditBox" inherits="InputBoxTemplate" letters="6">
+				<Size>
+					<AbsDimension x="83" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="50" y="-75"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						this:SetAutoFocus(false);
+						this:SetTextInsets(0, 0, 0, 0);
+					</OnLoad>
+					<OnEnterPressed>
+						this:ClearFocus();
+					</OnEnterPressed>
+				</Scripts>
+				<FontString name="RavenDKPBidXString" inherits="GameFontNormal"></FontString>
+			</EditBox>
+			<Button name="RavenDKPBidMSButton" inherits="UIPanelButtonTemplate" text="MS">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="155" y="-75" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidXOnEnter(RavenDKPBidEditBox:GetText(),"ms");
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidOSButton" inherits="UIPanelButtonTemplate" text="OS">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="210" y="-75" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidXOnEnter(RavenDKPBidEditBox:GetText(),"os");
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidPlus10Button" inherits="UIPanelButtonTemplate" text="+10">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="155" y="-100" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidPlus10();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidPlus10OSButton" inherits="UIPanelButtonTemplate" text="+10">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="210" y="-100" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidPlus10OS();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<!-- Top right corner close button -->
+			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="245" y="-4" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_CloseUI();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<!-- Countdown bar shrinking foreground -->
+			<Button name="$parentAuctionStatusbar" toplevel="true" hidden="true">
+				<Size>
+					<AbsDimension x="205" y="35" />
+				</Size>
+				<Anchors>
+					<Anchor point="LEFT" relativePoint="BOTTOMLEFT" relativeTo="$parent">
+						<Offset x="40" y="0" />
+					</Anchor>
+				</Anchors>
+				<NormalTexture name="$parentTexture" file="Interface\AddOns\RavenDKP\Luna.tga">
+					<Color r="1" g="1" b="1"/>
+				</NormalTexture>
+				<Scripts>
+					<OnLoad>
+						getglobal(this:GetName() .."Texture"):SetVertexColor(0.8, 0.0, 0.0, 1)
+					</OnLoad>
+				</Scripts>
+			</Button>			
+			<!-- Countdown bar background -->
+			<Frame name="$parentTimerFrame" parent="RavenDKPUIFrame" toplevel="true" hidden="true">
+				<Size>
+					<AbsDimension x="220" y="50" />
+				</Size>
+				<Anchors>
+					<Anchor point="BOTTOM">
+						<Offset x="0" y="-25" />
+					</Anchor>
+				</Anchors>
+				<Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+					<BackgroundInsets>
+						<AbsInset left="12" right="12" top="12" bottom="12" />
+					</BackgroundInsets>
+					<TileSize>
+						<AbsValue val="32" />
+					</TileSize>
+					<EdgeSize>
+						<AbsValue val="32" />
+					</EdgeSize>
+				</Backdrop>
+			</Frame>
+			<Frame name="parentTimerFrameBG" frameStrata="BACKGROUND" toplevel="false" enableMouse="true" movable="true">
+				<Size x="196" y="26"/>
+				<Anchors>
+					<Anchor point="BOTTOM">
+						<Offset x="0" y="-20" />
+					</Anchor>
+				</Anchors>
+
+				<Layers>
+				<Layer level="ARTWORK">
+					<Texture name="$parentTexture" file="Interface\AddOns\RavenDKP\BarBG.tga">
+						<Size>
+							<AbsDimension x="196" y="26"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOP" relativeTo="$parentHeaderTexture">
+								<Offset>
+									<AbsDimension x="0" y="0" />
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<TexCoords left="0" right="0.765625" top="0" bottom="0.8125"/>
+					</Texture>
+				</Layer>
+				</Layers>		
+			</Frame>
+			
+			<!-- Current item frame -->
+			<Frame name="$parentItem" toplevel="true" hidden="true">		
+				<Size>
+					<AbsDimension x="220" y="80" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset>
+							<AbsDimension x="0" y="85" />
+						</Offset>
+					</Anchor>
+				</Anchors>
+				<Backdrop bgFile="Interface\DialogFrame\UI-DialogBox-Background" edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+					<BackgroundInsets>
+						<AbsInset left="12" right="12" top="12" bottom="12" />
+					</BackgroundInsets>
+					<TileSize>
+						<AbsValue val="32" />
+					</TileSize>
+					<EdgeSize>
+						<AbsValue val="32" />
+					</EdgeSize>
+				</Backdrop>
+
+				<Frames>
+					<Frame name="$parentItem">
+						<Size>
+							<AbsDimension x="48" y="48" />
+						</Size>
+						<Anchors>
+							<Anchor point="LEFT">
+								<Offset>
+									<AbsDimension x="16" y="0" />
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<Layers>
+							<Layer level="ARTWORK">
+								<Texture name="$parentTexture" file="">
+									<Anchors>
+										<Anchor point="TOP" relativeTo="$parentHeaderTexture">
+											<Offset>
+												<AbsDimension x="0" y="-14" />
+											</Offset>
+										</Anchor>
+									</Anchors>
+								</Texture>
+							</Layer>
+						</Layers>
+						<Scripts>
+							<OnEnter>
+								GameTooltip:SetOwner(this, "ANCHOR_LEFT")
+								RavenDKP_CurrentItemTooltip()
+							</OnEnter>
+							<OnLeave>
+								GameTooltip:Hide();
+							</OnLeave>
+						</Scripts>
+					</Frame>
+				</Frames>
+
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentItemName" inherits="GameFontNormal" font="Fonts\FRIZQT__.TTF" text="">
+							<Color r="" g="" b="" a="" />
+							<FontHeight val="12" />
+							<Size>
+								<AbsDimension x="134" y="40" />
+							</Size>
+							<Anchors>
+								<Anchor point="Left">
+									<Offset>
+										<AbsDimension x="68" y="0" />
+									</Offset>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
+
+        </Frames>
+		<Layers>
+			<Layer level="OVERLAY">
+				<Texture name="$parentHeaderTexture" file="Interface\DialogFrame\UI-DialogBox-Header">
+					<Size>
+						<AbsDimension x="180" y="64" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOP">
+							<Offset>
+								<AbsDimension x="0" y="12" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+				<FontString inherits="GameFontNormalLarge" text="RavenDKP">
+					<Anchors>
+						<Anchor point="TOP" relativeTo="$parentHeaderTexture">
+							<Offset>
+								<AbsDimension x="0" y="-14" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<Texture file="Interface\DialogFrame\UI-DialogBox-Corner">
+					<Size>
+						<AbsDimension x="32" y="32"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPRIGHT">
+							<Offset>
+								<AbsDimension x="-8" y="-8" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Scripts>
+			<OnLoad>
+				this:SetMovable(true)
+				this:SetUserPlaced(true)
+				this:RegisterForDrag("LeftButton")
+			</OnLoad>
+			<OnDragStart>
+				this:StartMoving()
+			</OnDragStart>
+			<OnDragStop>
+				this:StopMovingOrSizing()
+			</OnDragStop>
+		</Scripts>
+    </Frame>
+
+    <!-- Dummy event frame -->
+	<Frame name="RavenDKPEventFrame">
+		<Scripts>
+			<OnLoad>
+				RavenDKP_OnLoad();
+			</OnLoad>
+			<OnUpdate>
+				RavenDKP_OnUpdate(arg1);
+			</OnUpdate>			
+			<OnEvent>
+				if (RavenDKP_OnEvent) then
+					RavenDKP_OnEvent(event, arg1, arg2, arg3, arg4, arg5);
+				end
+			</OnEvent>
+		</Scripts>
+	</Frame>
+</Ui>
