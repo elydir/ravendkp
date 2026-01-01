@@ -4,7 +4,7 @@
 - RavenDKP now send messages in raid chat and update current bid on its own (only if bid is valid, if not - SotA will send player a message)
 - added new buttons +10 for MS and OS to make auctions faster 
 
-![img](C:\Users\kch\Documents\GitHub\ravendkp\img.PNG)
+![img](https://github.com/elydir/ravendkp/blob/main/img.PNG?raw=true)
 
 Overall this changes will lead to faster auctions even if 20 people will bid at the same time. 
 
