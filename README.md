@@ -1,5 +1,7 @@
 # RavenDKP and SotA reworked
 
+For bidding you need only RavenDKP. If you are not RL or LM - don't add SotA to Addon folder.
+
 - removed raid warnings and whispers on new bids from Loot Master (avoiding LM to be blocked by spamfilter)
 - RavenDKP now send messages in raid chat and update current bid on its own (only if bid is valid, if not - SotA will send player a message)
 - added new buttons +10 for MS and OS to make auctions faster 
