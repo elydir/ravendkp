@@ -242,6 +242,20 @@
 					</Layer>
 				</Layers>
 			</Button>
+            <!-- Bid input frame -->
+			<Frame name="RavenDKPBidInputFrame">
+				<Size>
+					<AbsDimension x="140" y="115" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="13" y="-65" />
+					</Anchor>
+				</Anchors>
+				<Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+					<EdgeSize val="16"/>
+				</Backdrop>
+			</Frame>
             <!-- Bid input field and button row -->
 			<Button name="RavenDKPBidText">
 				<Size>
@@ -296,7 +310,7 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="155" y="-55" />
+						<Offset x="45" y="-105" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -312,7 +326,7 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="210" y="-55" />
+						<Offset x="90" y="-105" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -322,6 +336,68 @@
 					</OnClick>
 				</Scripts>
 			</Button>
+			<Frame name="RavenDKPBidCustomTextFrame">
+    <Size>
+        <AbsDimension x="200" y="60"/>
+    </Size>
+    <Anchors>
+        <Anchor point="TOPLEFT"><Offset x="25" y="-140"/></Anchor>
+    </Anchors>
+
+    <Layers>
+        <Layer>
+
+            <!-- line 1 -->
+            <FontString name="$parentLine1" inherits="GameFontNormalSmall"
+                        text="To add custom bid, add">
+                <Anchors>
+                    <Anchor point="TOPLEFT"><Offset x="0" y="0"/></Anchor>
+                </Anchors>
+                <Color r="0.7" g="0.7" b="0.7"/>
+            </FontString>
+
+            <!-- line 2 -->
+            <FontString name="$parentLine2" inherits="GameFontNormalSmall"
+                        text="value   into   bid   frame">
+                <Anchors>
+                    <Anchor point="TOPLEFT"><Offset x="0" y="-9"/></Anchor> <!-- 18 px down -->
+                </Anchors>
+                <Color r="0.7" g="0.7" b="0.7"/>
+            </FontString>
+
+            <!-- line 3 -->
+            <FontString name="$parentLine3" inherits="GameFontNormalSmall"
+                        text="and   press   MS  or  OS">
+                <Anchors>
+                    <Anchor point="TOPLEFT"><Offset x="0" y="-18"/></Anchor>
+                </Anchors>
+                <Color r="0.7" g="0.7" b="0.7"/>
+            </FontString>
+
+        </Layer>
+    </Layers>
+</Frame>
+
+
+			<Frame name="RavenDKPBidPlus10LabelFrame">
+				<Size>
+					<AbsDimension x="45" y="15" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="155" y="-65" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="CENTER" inherits="GameFontNormalSmall" text="MS">
+							<Anchors>
+								<Anchor point="CENTER"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
 			<Button name="RavenDKPBidPlus10Button" inherits="UIPanelButtonTemplate" text="+10">
 				<Size>
 					<AbsDimension x="45" y="23" />
@@ -338,6 +414,25 @@
 					</OnClick>
 				</Scripts>
 			</Button>
+			<Frame name="RavenDKPBidPlus10OSLabelFrame">
+				<Size>
+					<AbsDimension x="45" y="15" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="210" y="-65" />
+					</Anchor>
+				</Anchors>
+				<Layers>
+					<Layer>
+						<FontString name="$parentText" justifyH="CENTER" inherits="GameFontNormalSmall" text="OS">
+							<Anchors>
+								<Anchor point="CENTER"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+			</Frame>
 			<Button name="RavenDKPBidPlus10OSButton" inherits="UIPanelButtonTemplate" text="+10">
 				<Size>
 					<AbsDimension x="45" y="23" />
@@ -420,7 +515,7 @@
 			</Button>
 			<Button name="RavenDKPBidAllInButton" inherits="UIPanelButtonTemplate" text="All in">
 				<Size>
-					<AbsDimension x="100" y="23" />
+					<AbsDimension x="45" y="23" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
@@ -430,6 +525,22 @@
 				<Scripts>
 					<OnClick>
 						RavenDKP_BidAllIn();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidAllInOSButton" inherits="UIPanelButtonTemplate" text="All in">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="210" y="-155" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidAllInOS();
 						RavenDKPBidEditBox:ClearFocus();
 					</OnClick>
 				</Scripts>

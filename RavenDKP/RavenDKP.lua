@@ -141,6 +141,12 @@ function RavenDKP_BidAllIn()
 	RavenDKP_BidXOnEnter(newBid,"ms")
 end
 
+function RavenDKP_BidAllInOS()
+	local newBid = tostring(RavenDKP_PlayerDKP)
+	getglobal("RavenDKPBidEditBox"):SetText(newBid)
+	RavenDKP_BidXOnEnter(newBid,"os")
+end
+
 function RavenDKP_MinimapButtonOnClick()
     if RavenDKP_IsShown == 0 then
         RavenDKP_OpenUI()
@@ -169,8 +175,12 @@ function RavenDKP_OnRaidChat(event, message, sender)
 		elseif specType == "MS" then
 			if newBid > currentBid then
 				validBid = true
-			elseif newBid == currentBid and specType == currentBidType and sender == RavenDKP_HighestBidder then
-				validBid = true
+			elseif newBid == currentBid then
+				if currentBidType == "OS" then
+					validBid = true
+				elseif specType == currentBidType and sender == RavenDKP_HighestBidder then
+					validBid = true
+				end
 			end
 		elseif specType == "OS" then
 			if currentBidType ~= "MS" then
