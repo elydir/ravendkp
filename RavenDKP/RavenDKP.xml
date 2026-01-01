@@ -72,7 +72,7 @@
     <!--	RavenDKP UI Frame	-->
 	<Frame name="RavenDKPUIFrame" parent="UIParent" toplevel="true" hidden="true">
 		<Size>
-			<AbsDimension x="280" y="145" />
+			<AbsDimension x="280" y="200" />
 		</Size>
 		<Anchors>
 			<Anchor point="TOPLEFT">
@@ -93,7 +93,7 @@
         <Frames>
 			<!-- Background Image -->
 			<Frame name="BackgroundFrame" frameStrata="BACKGROUND" toplevel="false" enableMouse="true" movable="true">
-				<Size x="258" y="121"/>
+				<Size x="258" y="180"/>
 				<Anchors>
 					<Anchor point="TOP">
 						<Offset x="0" y="-12" />
@@ -296,7 +296,7 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="155" y="-75" />
+						<Offset x="155" y="-55" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -312,7 +312,7 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="210" y="-75" />
+						<Offset x="210" y="-55" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -328,7 +328,7 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="155" y="-100" />
+						<Offset x="155" y="-80" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
@@ -344,12 +344,92 @@
 				</Size>
 				<Anchors>
 					<Anchor point="TOPLEFT">
-						<Offset x="210" y="-100" />
+						<Offset x="210" y="-80" />
 					</Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
 						RavenDKP_BidPlus10OS();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidPlus50Button" inherits="UIPanelButtonTemplate" text="+50">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="155" y="-105" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidPlus50();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidPlus50OSButton" inherits="UIPanelButtonTemplate" text="+50">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="210" y="-105" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidPlus50OS();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidPlus100Button" inherits="UIPanelButtonTemplate" text="+100">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="155" y="-130" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidPlus100();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidPlus100OSButton" inherits="UIPanelButtonTemplate" text="+100">
+				<Size>
+					<AbsDimension x="45" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="210" y="-130" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidPlus100OS();
+						RavenDKPBidEditBox:ClearFocus();
+					</OnClick>
+				</Scripts>
+			</Button>
+			<Button name="RavenDKPBidAllInButton" inherits="UIPanelButtonTemplate" text="All in">
+				<Size>
+					<AbsDimension x="100" y="23" />
+				</Size>
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="155" y="-155" />
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						RavenDKP_BidAllIn();
 						RavenDKPBidEditBox:ClearFocus();
 					</OnClick>
 				</Scripts>

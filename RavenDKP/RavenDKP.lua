@@ -87,6 +87,60 @@ function RavenDKP_BidPlus10OS()
 	RavenDKP_BidXOnEnter(newBid,"os")
 end
 
+function RavenDKP_BidPlus50()
+	local newBid
+	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
+		newBid = "50"
+	else
+		newBid = tostring(tonumber(RavenDKP_HighestBid) + 50)
+	end
+	
+	getglobal("RavenDKPBidEditBox"):SetText(newBid)
+	RavenDKP_BidXOnEnter(newBid,"ms")
+end
+
+function RavenDKP_BidPlus50OS()
+	local newBid
+	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
+		newBid = "50"
+	else
+		newBid = tostring(tonumber(RavenDKP_HighestBid) + 50)
+	end
+	
+	getglobal("RavenDKPBidEditBox"):SetText(newBid)
+	RavenDKP_BidXOnEnter(newBid,"os")
+end
+
+function RavenDKP_BidPlus100()
+	local newBid
+	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
+		newBid = "100"
+	else
+		newBid = tostring(tonumber(RavenDKP_HighestBid) + 100)
+	end
+	
+	getglobal("RavenDKPBidEditBox"):SetText(newBid)
+	RavenDKP_BidXOnEnter(newBid,"ms")
+end
+
+function RavenDKP_BidPlus100OS()
+	local newBid
+	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
+		newBid = "100"
+	else
+		newBid = tostring(tonumber(RavenDKP_HighestBid) + 100)
+	end
+	
+	getglobal("RavenDKPBidEditBox"):SetText(newBid)
+	RavenDKP_BidXOnEnter(newBid,"os")
+end
+
+function RavenDKP_BidAllIn()
+	local newBid = tostring(RavenDKP_PlayerDKP)
+	getglobal("RavenDKPBidEditBox"):SetText(newBid)
+	RavenDKP_BidXOnEnter(newBid,"ms")
+end
+
 function RavenDKP_MinimapButtonOnClick()
     if RavenDKP_IsShown == 0 then
         RavenDKP_OpenUI()
