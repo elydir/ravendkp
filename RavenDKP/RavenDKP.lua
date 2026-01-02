@@ -41,6 +41,8 @@ function RavenDKP_OnEvent(event, arg1, arg2, arg3, arg4, arg5)
 		RavenDKP_OnRaidChat(event, arg1, arg2)
     elseif (event == "CHAT_MSG_EMOTE") then
 		RavenDKP_Propagandize(arg1, arg2)
+	elseif (event == "GUILD_ROSTER_UPDATE") then
+		RavenDKP_UpdatePlayerDKP()
 	end
 end
 
@@ -53,6 +55,7 @@ function RavenDKP_OnLoad()
 	this:RegisterEvent("CHAT_MSG_RAID_WARNING");
 	this:RegisterEvent("CHAT_MSG_RAID");
 	this:RegisterEvent("CHAT_MSG_EMOTE");
+	this:RegisterEvent("GUILD_ROSTER_UPDATE");
     getglobal("RavenDKP_MinimapButtonFrame"):Show()
     RavenDKP_StatusbarStandardwidth = getglobal("RavenDKPUIFrameAuctionStatusbar"):GetWidth()
 	RavenDKPUIFrameAuctionStatusbar:Show()
@@ -60,7 +63,42 @@ function RavenDKP_OnLoad()
 end
 
 function RavenDKP_BidXOnEnter(dkp,spec)
-	SendChatMessage("[RavenDKP] "..spec.." "..dkp,"RAID")
+	local bidAmount = tonumber(dkp)
+	local specType = "MS"
+	if string.lower(spec) == "os" then
+		specType = "OS"
+	end
+	
+	if bidAmount > RavenDKP_PlayerDKP then
+		bidAmount = RavenDKP_PlayerDKP
+		getglobal("RavenDKPBidEditBox"):SetText(tostring(RavenDKP_PlayerDKP))
+		
+		local currentBid = tonumber(RavenDKP_HighestBid) or 0
+		local currentBidType = RavenDKP_HighestBidType or ""
+		
+		if currentBid > 0 then
+			local canBid = false
+			
+			if specType == "MS" then
+				if bidAmount > currentBid then
+					canBid = true
+				elseif bidAmount == currentBid and currentBidType == "OS" then
+					canBid = true
+				end
+			elseif specType == "OS" then
+				if bidAmount > currentBid and currentBidType ~= "MS" then
+					canBid = true
+				end
+			end
+			
+			if not canBid then
+				DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RavenDKP] You don't have enough DKP to bid! Current bid: " .. currentBid .. " (" .. currentBidType .. "), Your DKP: " .. RavenDKP_PlayerDKP .. "|r")
+				return
+			end
+		end
+	end
+	
+	SendChatMessage("[RavenDKP] "..spec.." "..bidAmount,"RAID")
 end
 
 function RavenDKP_BidPlus10()
@@ -203,7 +241,7 @@ function RavenDKP_OpenUI()
     RavenDKPUIFrame:Show()
 	RavenDKP_IsShown=1
 	
-	RavenDKP_UpdatePlayerDKP()
+	GuildRoster()
 end
 
 function RavenDKP_CloseUI()
@@ -388,7 +426,7 @@ function RavenDKP_OnUpdate(elapsed)
 	if RavenDKP_DKPUpdateQueued == 1 then
 		RavenDKP_TimeSinceDKPUpdate = RavenDKP_TimeSinceDKPUpdate + elapsed
 		if RavenDKP_TimeSinceDKPUpdate > 5 then
-			RavenDKP_UpdatePlayerDKP()
+			GuildRoster()
 			RavenDKP_DebugMessage("Delayed player DKP update")
 			RavenDKP_DKPUpdateQueued = 0
 		end
@@ -419,7 +457,6 @@ end
 
 function RavenDKP_UpdatePlayerDKP()
 	RavenDKP_TimeSinceDKPUpdate = 0
-	GuildRoster() -- Fetches fresh guild info. Has a 10s rate limit, so call RavenDKP_UpdatePlayerDKP() conservatively (rate limit is untested on TWOW)
 	local memberCount = GetNumGuildMembers();
 	for n=1,memberCount,1 do
 		local name, _, _, _, _, _, _, note = GetGuildRosterInfo(n)
