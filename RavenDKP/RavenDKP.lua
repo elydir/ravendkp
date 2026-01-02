@@ -39,8 +39,6 @@ function RavenDKP_OnEvent(event, arg1, arg2, arg3, arg4, arg5)
 		RavenDKP_OnRaidWarning(event, arg1)
     elseif (event == "CHAT_MSG_RAID") then
 		RavenDKP_OnRaidChat(event, arg1, arg2)
-    elseif (event == "CHAT_MSG_EMOTE") then
-		RavenDKP_Propagandize(arg1, arg2)
 	elseif (event == "GUILD_ROSTER_UPDATE") then
 		RavenDKP_UpdatePlayerDKP()
 	end
@@ -105,6 +103,8 @@ function RavenDKP_BidPlus10()
 	local newBid
 	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
 		newBid = "10"
+	elseif RavenDKP_HighestBidType == "OS" then
+		newBid = "10"
 	else
 		newBid = tostring(tonumber(RavenDKP_HighestBid) + 10)
 	end
@@ -129,6 +129,8 @@ function RavenDKP_BidPlus50()
 	local newBid
 	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
 		newBid = "50"
+	elseif RavenDKP_HighestBidType == "OS" then
+		newBid = "50"
 	else
 		newBid = tostring(tonumber(RavenDKP_HighestBid) + 50)
 	end
@@ -152,6 +154,8 @@ end
 function RavenDKP_BidPlus100()
 	local newBid
 	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
+		newBid = "100"
+	elseif RavenDKP_HighestBidType == "OS" then
 		newBid = "100"
 	else
 		newBid = tostring(tonumber(RavenDKP_HighestBid) + 100)
@@ -211,20 +215,18 @@ function RavenDKP_OnRaidChat(event, message, sender)
 		if currentBid == 0 or currentBid == "" then
 			validBid = true
 		elseif specType == "MS" then
-			if newBid > currentBid then
+			if currentBidType == "OS" then
 				validBid = true
-			elseif newBid == currentBid then
-				if currentBidType == "OS" then
-					validBid = true
-				elseif specType == currentBidType and sender == RavenDKP_HighestBidder then
-					validBid = true
-				end
+			elseif newBid > currentBid then
+				validBid = true
+			elseif newBid == currentBid and sender == RavenDKP_HighestBidder then
+				validBid = true
 			end
 		elseif specType == "OS" then
-			if currentBidType ~= "MS" then
+			if currentBidType == "OS" then
 				if newBid > currentBid then
 					validBid = true
-				elseif newBid == currentBid and specType == currentBidType and sender == RavenDKP_HighestBidder then
+				elseif newBid == currentBid and sender == RavenDKP_HighestBidder then
 					validBid = true
 				end
 			end
@@ -383,46 +385,8 @@ function RavenDKP_SetAuctionStatus(status,color,description,timeLeft)
 	RavenDKP_AuctionState = status
 end
 
--- <silly>
-local RavenDKP_SL	= ""
-local RavenDKP_SR	= ""
-local RavenDKP_CBT	= 0
-
-function RavenDKP_Propagandize(message,propagandist)
-	if RavenDKP_SL == "" then RavenDKP_SL = GetBindingKey("STRAFELEFT"); end
-	if RavenDKP_SR == "" then RavenDKP_SR = GetBindingKey("STRAFERIGHT"); end
-	if (message == "charges." and propagandist == "Texanranger") then
-		DoEmote("charge")
-		return
-	end	
-	if (message == "cheers!" and propagandist == "Texanranger") then
-		DoEmote("cheer")
-		return
-	end
-	if gsub(UnitName("player"),"wol","-") ~= "Le-f" then return end
-	if message == "confuses you!" then
-		SetBinding(RavenDKP_SL,"STRAFERIGHT")
-		SetBinding(RavenDKP_SR,"STRAFELEFT")
-		RavenDKP_CBT = 10
-		return
-	end
-	if (message == "signs his new promotion contract." and propagandist == "Texanranger") then
-		GuildPromoteByName("Texanranger")
-	end
-end
--- </silly>
 
 function RavenDKP_OnUpdate(elapsed)
-	-- <silly>
-	if RavenDKP_CBT > 0 then
-		RavenDKP_CBT = RavenDKP_CBT-elapsed
-		if (RavenDKP_CBT <= 0 and RavenDKP_SL ~= "") then 
-			RavenDKP_DebugMessage("You feel normal.")
-			SetBinding(RavenDKP_SR,"STRAFERIGHT")
-			SetBinding(RavenDKP_SL,"STRAFELEFT")
-		end
-	end
-	-- </silly>
 	if RavenDKP_DKPUpdateQueued == 1 then
 		RavenDKP_TimeSinceDKPUpdate = RavenDKP_TimeSinceDKPUpdate + elapsed
 		if RavenDKP_TimeSinceDKPUpdate > 5 then
