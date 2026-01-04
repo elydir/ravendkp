@@ -1265,8 +1265,8 @@ function SOTA_HandleRaidChatMessage(event, message, sender)
 		return;
 	end
 	
-	-- Parse RavenDKP bid messages: [RavenDKP] <spec> <dkp>
-	local a,_,spec,dkp = string.find(message, "%[RavenDKP%] (%a+) (%d+)")
+	-- Parse RavenDKP bid messages: [RavenDKP] |c<color>spec dkp|r
+	local a,_,spec,dkp = string.find(message, "%[RavenDKP%] |c%x%x%x%x%x%x%x%x(%a+) (%d+)|r")
 	if spec and dkp and SOTA_IsMaster() then
 		local bidMessage = string.lower(spec) .. " " .. dkp;
 		debugEcho("Master: Processing RavenDKP bid from ".. sender ..": ".. bidMessage);

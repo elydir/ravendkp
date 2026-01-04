@@ -546,10 +546,13 @@
 				</Scripts>
 			</Button>
 			<!-- Top right corner close button -->
-			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton">
+			<Button name="$parentTopCloseButton" inherits="UIPanelCloseButton" frameLevel="5">
+				<HitRectInsets>
+					<AbsInset left="-5" right="-5" top="-5" bottom="-5"/>
+				</HitRectInsets>
 				<Anchors>
-					<Anchor point="TOPLEFT">
-						<Offset x="245" y="-4" />
+					<Anchor point="TOPRIGHT">
+						<Offset x="-4" y="-4" />
 					</Anchor>
 				</Anchors>
 				<Scripts>

@@ -22,6 +22,9 @@ local RavenDKP_HighestBid				= ""
 local RavenDKP_HighestBidder			= ""
 local RavenDKP_HighestBidType			= ""
 local RavenDKP_CurrenItemLink			= ""
+local RavenDKP_LastBidUpdateTime			= 0
+local RavenDKP_CachedHighestBid			= ""
+local RavenDKP_ButtonsDisabledUntil		= 0
 
 local RavenDKP_CLASS_COLORS_HEX = {
 	 ["Druid"] = "FF7D0A",
@@ -39,6 +42,8 @@ function RavenDKP_OnEvent(event, arg1, arg2, arg3, arg4, arg5)
 		RavenDKP_OnRaidWarning(event, arg1)
     elseif (event == "CHAT_MSG_RAID") then
 		RavenDKP_OnRaidChat(event, arg1, arg2)
+	elseif (event == "CHAT_MSG_RAID_LEADER") then
+		RavenDKP_OnRaidChat(event, arg1, arg2)
 	elseif (event == "GUILD_ROSTER_UPDATE") then
 		RavenDKP_UpdatePlayerDKP()
 	end
@@ -52,12 +57,31 @@ function RavenDKP_OnLoad()
     this:RegisterEvent("ADDON_LOADED");
 	this:RegisterEvent("CHAT_MSG_RAID_WARNING");
 	this:RegisterEvent("CHAT_MSG_RAID");
+	this:RegisterEvent("CHAT_MSG_RAID_LEADER");
 	this:RegisterEvent("CHAT_MSG_EMOTE");
 	this:RegisterEvent("GUILD_ROSTER_UPDATE");
     getglobal("RavenDKP_MinimapButtonFrame"):Show()
     RavenDKP_StatusbarStandardwidth = getglobal("RavenDKPUIFrameAuctionStatusbar"):GetWidth()
 	RavenDKPUIFrameAuctionStatusbar:Show()
 	RavenDKPUIFrameTimerFrame:Show()
+end
+
+function RavenDKP_DisableAllBidButtons()
+	getglobal("RavenDKPBidPlus10Button"):Disable()
+	getglobal("RavenDKPBidPlus10OSButton"):Disable()
+	getglobal("RavenDKPBidPlus50Button"):Disable()
+	getglobal("RavenDKPBidPlus50OSButton"):Disable()
+	getglobal("RavenDKPBidPlus100Button"):Disable()
+	getglobal("RavenDKPBidPlus100OSButton"):Disable()
+end
+
+function RavenDKP_EnableAllBidButtons()
+	getglobal("RavenDKPBidPlus10Button"):Enable()
+	getglobal("RavenDKPBidPlus10OSButton"):Enable()
+	getglobal("RavenDKPBidPlus50Button"):Enable()
+	getglobal("RavenDKPBidPlus50OSButton"):Enable()
+	getglobal("RavenDKPBidPlus100Button"):Enable()
+	getglobal("RavenDKPBidPlus100OSButton"):Enable()
 end
 
 function RavenDKP_BidXOnEnter(dkp,spec)
@@ -67,112 +91,183 @@ function RavenDKP_BidXOnEnter(dkp,spec)
 		specType = "OS"
 	end
 	
-	if bidAmount > RavenDKP_PlayerDKP then
-		bidAmount = RavenDKP_PlayerDKP
-		getglobal("RavenDKPBidEditBox"):SetText(tostring(RavenDKP_PlayerDKP))
-		
-		local currentBid = tonumber(RavenDKP_HighestBid) or 0
-		local currentBidType = RavenDKP_HighestBidType or ""
-		
-		if currentBid > 0 then
-			local canBid = false
-			
-			if specType == "MS" then
-				if bidAmount > currentBid then
-					canBid = true
-				elseif bidAmount == currentBid and currentBidType == "OS" then
-					canBid = true
-				end
-			elseif specType == "OS" then
-				if bidAmount > currentBid and currentBidType ~= "MS" then
-					canBid = true
-				end
-			end
-			
-			if not canBid then
-				DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[RavenDKP] You don't have enough DKP to bid! Current bid: " .. currentBid .. " (" .. currentBidType .. "), Your DKP: " .. RavenDKP_PlayerDKP .. "|r")
+	if RavenDKP_AuctionState == 0 then
+		UIErrorsFrame:AddMessage("[RavenDKP] No active auction")
+		return
+	end
+	
+	local currentBid = tonumber(RavenDKP_HighestBid) or 0
+	local currentBidType = RavenDKP_HighestBidType or ""
+	
+	local canBid = false
+	
+	if currentBid == 0 or currentBid == "" then
+		if bidAmount >= 10 then
+			canBid = true
+		else
+			UIErrorsFrame:AddMessage("[RavenDKP] Minimum bid is 10 DKP")
+			return
+		end
+	elseif specType == "MS" then
+		if currentBidType == "OS" then
+			if bidAmount >= 10 then
+				canBid = true
+			else
+				UIErrorsFrame:AddMessage("[RavenDKP] Minimum MS bid is 10 DKP when current is OS")
 				return
 			end
+		elseif bidAmount >= currentBid + 10 then
+			canBid = true
+		elseif bidAmount == currentBid and UnitName("player") == RavenDKP_HighestBidder then
+			canBid = true
+		else
+			UIErrorsFrame:AddMessage("[RavenDKP] MS bid must be at least 10 DKP higher than current MS bid")
+			return
+		end
+	elseif specType == "OS" then
+		if currentBidType == "MS" then
+			UIErrorsFrame:AddMessage("[RavenDKP] Cannot bid OS when current bid is MS")
+			return
+		elseif bidAmount >= currentBid + 10 then
+			canBid = true
+		elseif bidAmount == currentBid and UnitName("player") == RavenDKP_HighestBidder then
+			canBid = true
+		else
+			UIErrorsFrame:AddMessage("[RavenDKP] OS bid must be at least 10 DKP higher than current OS bid")
+			return
 		end
 	end
 	
-	SendChatMessage("[RavenDKP] "..spec.." "..bidAmount,"RAID")
+	if bidAmount > RavenDKP_PlayerDKP then
+		UIErrorsFrame:AddMessage("[RavenDKP] Not enough DKP - you have " .. RavenDKP_PlayerDKP)
+		return
+	end
+	
+	if canBid then
+		local colorCode = "|cFF0070DD"
+		if specType == "OS" then
+			colorCode = "|cFFFF0000"
+		end
+		SendChatMessage("[RavenDKP] "..colorCode..spec.." "..bidAmount.."|r","RAID")
+	end
 end
 
 function RavenDKP_BidPlus10()
 	local newBid
-	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
-		newBid = "10"
-	elseif RavenDKP_HighestBidType == "OS" then
-		newBid = "10"
-	else
-		newBid = tostring(tonumber(RavenDKP_HighestBid) + 10)
+	local highestBidToUse = RavenDKP_HighestBid
+	
+	if RavenDKP_CachedHighestBid ~= "" and GetTime() - RavenDKP_LastBidUpdateTime < 1 then
+		highestBidToUse = RavenDKP_CachedHighestBid
 	end
 	
+	if highestBidToUse == "" or highestBidToUse == 0 or RavenDKP_HighestBidType == "OS" then
+		newBid = "10"
+	else
+		newBid = tostring(tonumber(highestBidToUse) + 10)
+	end
+	
+	RavenDKP_DisableAllBidButtons()
+	RavenDKP_ButtonsDisabledUntil = GetTime() + 1
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
 	RavenDKP_BidXOnEnter(newBid,"ms")
 end
 
 function RavenDKP_BidPlus10OS()
 	local newBid
-	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
-		newBid = "10"
-	else
-		newBid = tostring(tonumber(RavenDKP_HighestBid) + 10)
+	local highestBidToUse = RavenDKP_HighestBid
+	
+	if RavenDKP_CachedHighestBid ~= "" and GetTime() - RavenDKP_LastBidUpdateTime < 1 then
+		highestBidToUse = RavenDKP_CachedHighestBid
 	end
 	
+	if highestBidToUse == "" or highestBidToUse == 0 then
+		newBid = "10"
+	else
+		newBid = tostring(tonumber(highestBidToUse) + 10)
+	end
+	
+	RavenDKP_DisableAllBidButtons()
+	RavenDKP_ButtonsDisabledUntil = GetTime() + 1
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
 	RavenDKP_BidXOnEnter(newBid,"os")
 end
 
 function RavenDKP_BidPlus50()
 	local newBid
-	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
-		newBid = "50"
-	elseif RavenDKP_HighestBidType == "OS" then
-		newBid = "50"
-	else
-		newBid = tostring(tonumber(RavenDKP_HighestBid) + 50)
+	local highestBidToUse = RavenDKP_HighestBid
+	
+	if RavenDKP_CachedHighestBid ~= "" and GetTime() - RavenDKP_LastBidUpdateTime < 1 then
+		highestBidToUse = RavenDKP_CachedHighestBid
 	end
 	
+	if highestBidToUse == "" or highestBidToUse == 0 or RavenDKP_HighestBidType == "OS" then
+		newBid = "50"
+	else
+		newBid = tostring(tonumber(highestBidToUse) + 50)
+	end
+	
+	RavenDKP_DisableAllBidButtons()
+	RavenDKP_ButtonsDisabledUntil = GetTime() + 1
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
 	RavenDKP_BidXOnEnter(newBid,"ms")
 end
 
 function RavenDKP_BidPlus50OS()
 	local newBid
-	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
-		newBid = "50"
-	else
-		newBid = tostring(tonumber(RavenDKP_HighestBid) + 50)
+	local highestBidToUse = RavenDKP_HighestBid
+	
+	if RavenDKP_CachedHighestBid ~= "" and GetTime() - RavenDKP_LastBidUpdateTime < 1 then
+		highestBidToUse = RavenDKP_CachedHighestBid
 	end
 	
+	if highestBidToUse == "" or highestBidToUse == 0 then
+		newBid = "50"
+	else
+		newBid = tostring(tonumber(highestBidToUse) + 50)
+	end
+	
+	RavenDKP_DisableAllBidButtons()
+	RavenDKP_ButtonsDisabledUntil = GetTime() + 1
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
 	RavenDKP_BidXOnEnter(newBid,"os")
 end
 
 function RavenDKP_BidPlus100()
 	local newBid
-	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
-		newBid = "100"
-	elseif RavenDKP_HighestBidType == "OS" then
-		newBid = "100"
-	else
-		newBid = tostring(tonumber(RavenDKP_HighestBid) + 100)
+	local highestBidToUse = RavenDKP_HighestBid
+	
+	if RavenDKP_CachedHighestBid ~= "" and GetTime() - RavenDKP_LastBidUpdateTime < 1 then
+		highestBidToUse = RavenDKP_CachedHighestBid
 	end
 	
+	if highestBidToUse == "" or highestBidToUse == 0 or RavenDKP_HighestBidType == "OS" then
+		newBid = "100"
+	else
+		newBid = tostring(tonumber(highestBidToUse) + 100)
+	end
+	
+	RavenDKP_DisableAllBidButtons()
+	RavenDKP_ButtonsDisabledUntil = GetTime() + 1
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
 	RavenDKP_BidXOnEnter(newBid,"ms")
 end
 
 function RavenDKP_BidPlus100OS()
 	local newBid
-	if RavenDKP_HighestBid == "" or RavenDKP_HighestBid == 0 then
-		newBid = "100"
-	else
-		newBid = tostring(tonumber(RavenDKP_HighestBid) + 100)
+	local highestBidToUse = RavenDKP_HighestBid
+	
+	if RavenDKP_CachedHighestBid ~= "" and GetTime() - RavenDKP_LastBidUpdateTime < 1 then
+		highestBidToUse = RavenDKP_CachedHighestBid
 	end
 	
+	if highestBidToUse == "" or highestBidToUse == 0 then
+		newBid = "100"
+	else
+		newBid = tostring(tonumber(highestBidToUse) + 100)
+	end
+	
+	RavenDKP_DisableAllBidButtons()
+	RavenDKP_ButtonsDisabledUntil = GetTime() + 1
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
 	RavenDKP_BidXOnEnter(newBid,"os")
 end
@@ -180,13 +275,51 @@ end
 function RavenDKP_BidAllIn()
 	local newBid = tostring(RavenDKP_PlayerDKP)
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
-	RavenDKP_BidXOnEnter(newBid,"ms")
+	
+	local currentBid = tonumber(RavenDKP_HighestBid) or 0
+	local currentBidType = RavenDKP_HighestBidType or ""
+	
+	local canBid = false
+	if currentBid == 0 or currentBid == "" then
+		if RavenDKP_PlayerDKP >= 10 then
+			canBid = true
+		end
+	elseif currentBidType == "OS" then
+		canBid = true
+	elseif RavenDKP_PlayerDKP >= currentBid + 10 then
+		canBid = true
+	end
+	
+	if canBid then
+		RavenDKP_BidXOnEnter(newBid,"ms")
+	else
+		UIErrorsFrame:AddMessage("[RavenDKP] Invalid bid - must be at least 10 DKP higher than current bid")
+	end
 end
 
 function RavenDKP_BidAllInOS()
 	local newBid = tostring(RavenDKP_PlayerDKP)
 	getglobal("RavenDKPBidEditBox"):SetText(newBid)
-	RavenDKP_BidXOnEnter(newBid,"os")
+	
+	local currentBid = tonumber(RavenDKP_HighestBid) or 0
+	local currentBidType = RavenDKP_HighestBidType or ""
+	
+	local canBid = false
+	if currentBid == 0 or currentBid == "" then
+		if RavenDKP_PlayerDKP >= 10 then
+			canBid = true
+		end
+	elseif currentBidType == "OS" then
+		if RavenDKP_PlayerDKP >= currentBid + 10 then
+			canBid = true
+		end
+	end
+	
+	if canBid then
+		RavenDKP_BidXOnEnter(newBid,"os")
+	else
+		UIErrorsFrame:AddMessage("[RavenDKP] Invalid bid - must be at least 10 DKP higher than current OS bid")
+	end
 end
 
 function RavenDKP_MinimapButtonOnClick()
@@ -199,7 +332,7 @@ function RavenDKP_MinimapButtonOnClick()
 end
 
 function RavenDKP_OnRaidChat(event, message, sender)
-	local a,_,spec,bid = string.find(message, "%[RavenDKP%] (%a+) (%d+)")
+	local a,_,spec,bid = string.find(message, "%[RavenDKP%] |c%x%x%x%x%x%x%x%x(%a+) (%d+)|r")
 	if spec and bid then
 		local specType = "MS"
 		if string.lower(spec) == "os" then
@@ -342,6 +475,13 @@ function RavenDKP_OnRaidWarning(event, rw)
 	a,_,str = string.find(rw, "%[SotA%] Auction for (.*) is over")
 	if str then
 		RavenDKP_SetAuctionStatus(0,"FF0000","closed",0)
+		RavenDKP_SetHighestBidder("","","")
+		getglobal("RavenDKPBidEditBox"):SetText("")
+		RavenDKP_HighestBid = ""
+		RavenDKP_HighestBidder = ""
+		RavenDKP_HighestBidType = ""
+		RavenDKP_LastBidUpdateTime = 0
+		RavenDKP_CachedHighestBid = ""
 		RavenDKP_CloseUI()
 		return true
 	end
@@ -349,6 +489,13 @@ function RavenDKP_OnRaidWarning(event, rw)
 	-- /rw [SotA] Auction was Cancelled
 	if rw == "[SotA] Auction was Cancelled" then
 		RavenDKP_SetAuctionStatus(0,"FF0000","cancelled",0)
+		RavenDKP_SetHighestBidder("","","")
+		getglobal("RavenDKPBidEditBox"):SetText("")
+		RavenDKP_HighestBid = ""
+		RavenDKP_HighestBidder = ""
+		RavenDKP_HighestBidType = ""
+		RavenDKP_LastBidUpdateTime = 0
+		RavenDKP_CachedHighestBid = ""
 		RavenDKP_CloseUI()
 		return true
 	end
@@ -365,9 +512,17 @@ function RavenDKP_OnRaidWarning(event, rw)
 end
 
 function RavenDKP_SetHighestBidder(player,bid,specType)
-	RavenDKP_HighestBid	= bid
+	RavenDKP_CachedHighestBid = RavenDKP_HighestBid
+	RavenDKP_HighestBid = bid
 	RavenDKP_HighestBidder = player
 	RavenDKP_HighestBidType = specType
+	RavenDKP_LastBidUpdateTime = GetTime()
+	
+	if player ~= "" and bid ~= "" then
+		RavenDKP_DisableAllBidButtons()
+		RavenDKP_ButtonsDisabledUntil = GetTime() + 1
+	end
+	
 	if (player..bid) == "" then
 		getglobal("RavenDKPHighestBidTextButtonText"):SetText("\124c69FFFFFFThis auction brought to you by\124cFFFFFFFF")
 		getglobal("RavenDKPHighestBidderTextButtonText"):SetText("\124cFFFFFFFFthe Raven Labor Union\124cFFFFFFFF")
@@ -395,6 +550,12 @@ function RavenDKP_OnUpdate(elapsed)
 			RavenDKP_DKPUpdateQueued = 0
 		end
 	end
+	
+	if RavenDKP_ButtonsDisabledUntil > 0 and GetTime() >= RavenDKP_ButtonsDisabledUntil then
+		RavenDKP_EnableAllBidButtons()
+		RavenDKP_ButtonsDisabledUntil = 0
+	end
+	
 	if RavenDKP_AuctionState == 0 then return end
 	RavenDKP_RefreshTimer = RavenDKP_RefreshTimer + elapsed
 	if RavenDKP_RefreshTimer < RavenDKP_AuctionTimerUpdateRate then return end
