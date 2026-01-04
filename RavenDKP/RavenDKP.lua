@@ -26,6 +26,12 @@ local RavenDKP_LastBidUpdateTime			= 0
 local RavenDKP_CachedHighestBid			= ""
 local RavenDKP_ButtonsDisabledUntil		= 0
 
+local RavenDKP_AnimImageX				= 0
+local RavenDKP_AnimImageDirection		= 1
+local RavenDKP_AnimImageSpeed			= 100
+local RavenDKP_AnimImageMinX			= 0
+local RavenDKP_AnimImageMaxX			= 220
+
 local RavenDKP_CLASS_COLORS_HEX = {
 	 ["Druid"] = "FF7D0A",
 	 ["Hunter"] = "ABD473",
@@ -64,6 +70,11 @@ function RavenDKP_OnLoad()
     RavenDKP_StatusbarStandardwidth = getglobal("RavenDKPUIFrameAuctionStatusbar"):GetWidth()
 	RavenDKPUIFrameAuctionStatusbar:Show()
 	RavenDKPUIFrameTimerFrame:Show()
+	
+	local animFrame = getglobal("RavenDKPUIFrameAnimatedImageFrame")
+	if animFrame then
+		animFrame:Hide()
+	end
 end
 
 function RavenDKP_DisableAllBidButtons()
@@ -377,11 +388,21 @@ function RavenDKP_OpenUI()
 	RavenDKP_IsShown=1
 	
 	GuildRoster()
+	
+	local animFrame = getglobal("RavenDKPUIFrameAnimatedImageFrame")
+	if animFrame then
+		animFrame:Show()
+	end
 end
 
 function RavenDKP_CloseUI()
 	RavenDKPUIFrame:Hide()
     RavenDKP_IsShown = 0
+	
+	local animFrame = getglobal("RavenDKPUIFrameAnimatedImageFrame")
+	if animFrame then
+		animFrame:Hide()
+	end
 end
 
 function RavenDKP_CurrentItemTooltip()
@@ -554,6 +575,42 @@ function RavenDKP_OnUpdate(elapsed)
 	if RavenDKP_ButtonsDisabledUntil > 0 and GetTime() >= RavenDKP_ButtonsDisabledUntil then
 		RavenDKP_EnableAllBidButtons()
 		RavenDKP_ButtonsDisabledUntil = 0
+	end
+	
+	local animFrame = getglobal("RavenDKPUIFrameAnimatedImageFrame")
+	if animFrame and animFrame:IsVisible() then
+		local texture = getglobal(animFrame:GetName() .. "Texture")
+		if texture then
+			if RavenDKP_AnimImageDirection == 1 then
+				texture:SetTexCoord(1, 0, 0, 1)
+			else
+				texture:SetTexCoord(0, 1, 0, 1)
+			end
+		end
+		local oldDirection = RavenDKP_AnimImageDirection
+		RavenDKP_AnimImageX = RavenDKP_AnimImageX + (RavenDKP_AnimImageSpeed * elapsed * RavenDKP_AnimImageDirection)
+		
+		if RavenDKP_AnimImageX >= RavenDKP_AnimImageMaxX then
+			RavenDKP_AnimImageX = RavenDKP_AnimImageMaxX
+			RavenDKP_AnimImageDirection = -1
+		elseif RavenDKP_AnimImageX <= RavenDKP_AnimImageMinX then
+			RavenDKP_AnimImageX = RavenDKP_AnimImageMinX
+			RavenDKP_AnimImageDirection = 1
+		end
+		
+		if oldDirection ~= RavenDKP_AnimImageDirection then
+			local texture = getglobal(animFrame:GetName() .. "Texture")
+			if texture then
+				if RavenDKP_AnimImageDirection == 1 then
+					texture:SetTexCoord(1, 0, 0, 1)
+				else
+					texture:SetTexCoord(0, 1, 0, 1)
+				end
+			end
+		end
+		
+		animFrame:ClearAllPoints()
+		animFrame:SetPoint("TOPLEFT", RavenDKPUIFrame, "TOPLEFT", 5 + RavenDKP_AnimImageX, 40)
 	end
 	
 	if RavenDKP_AuctionState == 0 then return end
