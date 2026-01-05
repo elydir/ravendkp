@@ -721,7 +721,7 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<Texture name="$parentTexture" file="Interface\AddOns\RavenDKP\raven_v3.tga">
+						<Texture name="$parentTexture" file="Interface\AddOns\RavenDKP\raven_spritesheet_black.tga">
 							<Size>
 								<AbsDimension x="64" y="64"/>
 							</Size>

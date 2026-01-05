@@ -336,7 +336,7 @@
 	<!-- Auction Timer, nominal time -->
 	<Frame name="FrameConfigBidding" parent="UIParent" toplevel="true" hidden="true" inherits="SOTA_ConfigurationFrameTemplate">
 		<Frames>
-			<Slider name="$parentAuctionTime" minValue="0" maxValue="60" defaultValue="25" valueStep="1" inherits="OptionsSliderTemplate">
+			<Slider name="$parentAuctionTime" minValue="0" maxValue="60" defaultValue="10" valueStep="1" inherits="OptionsSliderTemplate">
 				<Anchors>
 					<Anchor point="TOPLEFT">
 						<Offset x="64" y="-124"/>

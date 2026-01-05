@@ -32,6 +32,11 @@ local RavenDKP_AnimImageSpeed			= 100
 local RavenDKP_AnimImageMinX			= 0
 local RavenDKP_AnimImageMaxX			= 220
 
+local RavenDKP_AnimFrames				= 16
+local RavenDKP_CurrentFrame			= 1
+local RavenDKP_AnimFrameTimer			= 0
+local RavenDKP_AnimTilesPerSecond		= 12
+
 local RavenDKP_CLASS_COLORS_HEX = {
 	 ["Druid"] = "FF7D0A",
 	 ["Hunter"] = "ABD473",
@@ -581,10 +586,33 @@ function RavenDKP_OnUpdate(elapsed)
 	if animFrame and animFrame:IsVisible() then
 		local texture = getglobal(animFrame:GetName() .. "Texture")
 		if texture then
+			local frameDelay = 1 / RavenDKP_AnimTilesPerSecond
+			RavenDKP_AnimFrameTimer = RavenDKP_AnimFrameTimer + elapsed
+			if RavenDKP_AnimFrameTimer >= frameDelay then
+				RavenDKP_AnimFrameTimer = 0
+				RavenDKP_CurrentFrame = RavenDKP_CurrentFrame + 1
+				if RavenDKP_CurrentFrame > RavenDKP_AnimFrames then
+					RavenDKP_CurrentFrame = 1
+				end
+			end
+			
+			local tilesPerRow = 4
+			local currentTile = RavenDKP_CurrentFrame - 1
+			local row = math.floor(currentTile / tilesPerRow)
+			local col = math.mod(currentTile, tilesPerRow)
+
+			local tileSizeX = 1 / tilesPerRow
+			local tileSizeY = 1 / 4
+
+			local left = col * tileSizeX
+			local right = left + tileSizeX
+			local top = row * tileSizeY
+			local bottom = top + tileSizeY
+
 			if RavenDKP_AnimImageDirection == 1 then
-				texture:SetTexCoord(1, 0, 0, 1)
+				texture:SetTexCoord(left, right, top, bottom)
 			else
-				texture:SetTexCoord(0, 1, 0, 1)
+				texture:SetTexCoord(right, left, top, bottom)
 			end
 		end
 		local oldDirection = RavenDKP_AnimImageDirection
@@ -596,17 +624,6 @@ function RavenDKP_OnUpdate(elapsed)
 		elseif RavenDKP_AnimImageX <= RavenDKP_AnimImageMinX then
 			RavenDKP_AnimImageX = RavenDKP_AnimImageMinX
 			RavenDKP_AnimImageDirection = 1
-		end
-		
-		if oldDirection ~= RavenDKP_AnimImageDirection then
-			local texture = getglobal(animFrame:GetName() .. "Texture")
-			if texture then
-				if RavenDKP_AnimImageDirection == 1 then
-					texture:SetTexCoord(1, 0, 0, 1)
-				else
-					texture:SetTexCoord(0, 1, 0, 1)
-				end
-			end
 		end
 		
 		animFrame:ClearAllPoints()
