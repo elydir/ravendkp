@@ -714,7 +714,7 @@
 				</Layers>
 			</Frame>
 			<!-- Animated Image Frame -->
-			<Frame name="$parentAnimatedImageFrame" frameStrata="TOOLTIP" enableMouse="false">
+			<Button name="$parentAnimatedImageFrame" frameStrata="TOOLTIP" enableMouse="true">
 				<Size>
 					<AbsDimension x="64" y="64"/>
 				</Size>
@@ -735,7 +735,36 @@
 						</Texture>
 					</Layer>
 				</Layers>
-			</Frame>
+				<Scripts>
+					<OnClick>
+						RavenDKP_OnRavenClick()
+					</OnClick>
+				</Scripts>
+				<Frames>
+					<Frame name="$parentClickImageFrame" hidden="true">
+						<Size>
+							<AbsDimension x="32" y="32"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPRIGHT">
+								<Offset x="0" y="20"/>
+							</Anchor>
+						</Anchors>
+						<Layers>
+							<Layer level="ARTWORK">
+								<Texture name="$parentClickTexture" file="Interface\AddOns\RavenDKP\bubble.tga">
+									<Size>
+										<AbsDimension x="64" y="64"/>
+									</Size>
+									<Anchors>
+										<Anchor point="TOPLEFT"/>
+									</Anchors>
+								</Texture>
+							</Layer>
+						</Layers>
+					</Frame>
+				</Frames>
+			</Button>
 
         </Frames>
 		<Layers>

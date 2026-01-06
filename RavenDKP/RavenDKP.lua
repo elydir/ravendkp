@@ -37,6 +37,9 @@ local RavenDKP_CurrentFrame			= 1
 local RavenDKP_AnimFrameTimer			= 0
 local RavenDKP_AnimTilesPerSecond		= 12
 
+local RavenDKP_ClickImageVisible		= false
+local RavenDKP_ClickImageTimer			= 0
+
 local RavenDKP_CLASS_COLORS_HEX = {
 	 ["Druid"] = "FF7D0A",
 	 ["Hunter"] = "ABD473",
@@ -634,6 +637,17 @@ function RavenDKP_OnUpdate(elapsed)
 		animFrame:SetPoint("TOPLEFT", RavenDKPUIFrame, "TOPLEFT", 5 + RavenDKP_AnimImageX, 40)
 	end
 	
+	if RavenDKP_ClickImageVisible then
+		RavenDKP_ClickImageTimer = RavenDKP_ClickImageTimer - elapsed
+		if RavenDKP_ClickImageTimer <= 0 then
+			local clickImageFrame = getglobal("RavenDKPUIFrameAnimatedImageFrameClickImageFrame")
+			if clickImageFrame then
+				clickImageFrame:Hide()
+				RavenDKP_ClickImageVisible = false
+			end
+		end
+	end
+	
 	if RavenDKP_AuctionState == 0 then return end
 	RavenDKP_RefreshTimer = RavenDKP_RefreshTimer + elapsed
 	if RavenDKP_RefreshTimer < RavenDKP_AuctionTimerUpdateRate then return end
@@ -678,4 +692,18 @@ function RavenDKP_UpdatePlayerDKP()
 	
     getglobal("RavenDKPPlayerDKPButtonText"):SetText("Your DKP: " ..RavenDKP_PlayerDKP)
 	RavenDKP_DebugMessage("Updated player's DKP")
+end
+
+function RavenDKP_OnRavenClick()
+	local clickImageFrame = getglobal("RavenDKPUIFrameAnimatedImageFrameClickImageFrame")
+	if clickImageFrame then
+		if clickImageFrame:IsVisible() then
+			clickImageFrame:Hide()
+			RavenDKP_ClickImageVisible = false
+		else
+			clickImageFrame:Show()
+			RavenDKP_ClickImageVisible = true
+			RavenDKP_ClickImageTimer = 5
+		end
+	end
 end
