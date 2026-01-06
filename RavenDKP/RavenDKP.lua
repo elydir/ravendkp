@@ -135,7 +135,9 @@ function RavenDKP_BidXOnEnter(dkp,spec)
 		elseif bidAmount >= currentBid + 10 then
 			canBid = true
 		elseif bidAmount == currentBid and UnitName("player") == RavenDKP_HighestBidder then
-			canBid = true
+			canBid = false
+			UIErrorsFrame:AddMessage("[RavenDKP] You are already the highest bidder with this amount")
+			return
 		else
 			UIErrorsFrame:AddMessage("[RavenDKP] MS bid must be at least 10 DKP higher than current MS bid")
 			return
@@ -147,7 +149,9 @@ function RavenDKP_BidXOnEnter(dkp,spec)
 		elseif bidAmount >= currentBid + 10 then
 			canBid = true
 		elseif bidAmount == currentBid and UnitName("player") == RavenDKP_HighestBidder then
-			canBid = true
+			canBid = false
+			UIErrorsFrame:AddMessage("[RavenDKP] You are already the highest bidder with this amount")
+			return
 		else
 			UIErrorsFrame:AddMessage("[RavenDKP] OS bid must be at least 10 DKP higher than current OS bid")
 			return

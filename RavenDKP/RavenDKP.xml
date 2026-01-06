@@ -562,7 +562,7 @@
 				</Scripts>
 			</Button>
 			<!-- Countdown bar shrinking foreground -->
-			<Button name="$parentAuctionStatusbar" toplevel="true" hidden="true">
+			<Frame name="$parentAuctionStatusbar" toplevel="true" hidden="true">
 				<Size>
 					<AbsDimension x="205" y="35" />
 				</Size>
@@ -571,15 +571,19 @@
 						<Offset x="40" y="0" />
 					</Anchor>
 				</Anchors>
-				<NormalTexture name="$parentTexture" file="Interface\AddOns\RavenDKP\Luna.tga">
-					<Color r="1" g="1" b="1"/>
-				</NormalTexture>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture name="$parentTexture" file="Interface\AddOns\RavenDKP\Luna.tga">
+							<Color r="1" g="1" b="1"/>
+						</Texture>
+					</Layer>
+				</Layers>
 				<Scripts>
 					<OnLoad>
 						getglobal(this:GetName() .."Texture"):SetVertexColor(0.8, 0.0, 0.0, 1)
 					</OnLoad>
 				</Scripts>
-			</Button>			
+			</Frame>			
 			<!-- Countdown bar background -->
 			<Frame name="$parentTimerFrame" parent="RavenDKPUIFrame" toplevel="true" hidden="true">
 				<Size>
