@@ -743,21 +743,21 @@
 				<Frames>
 					<Frame name="$parentClickImageFrame" hidden="true">
 						<Size>
-							<AbsDimension x="32" y="32"/>
+							<AbsDimension x="64" y="64"/>
 						</Size>
 						<Anchors>
-							<Anchor point="TOPRIGHT">
-								<Offset x="0" y="20"/>
+							<Anchor point="TOPLEFT">
+								<Offset x="55" y="35"/>
 							</Anchor>
 						</Anchors>
 						<Layers>
 							<Layer level="ARTWORK">
-								<Texture name="$parentClickTexture" file="Interface\AddOns\RavenDKP\bubble.tga">
+								<Texture name="$parentClickTexture" file="Interface/AddOns/RavenDKP/Bubbles/bubble_knorr.tga">
 									<Size>
-										<AbsDimension x="64" y="64"/>
+										<AbsDimension x="80" y="80"/>
 									</Size>
 									<Anchors>
-										<Anchor point="TOPLEFT"/>
+										<Anchor point="TOPRIGHT"/>
 									</Anchors>
 								</Texture>
 							</Layer>

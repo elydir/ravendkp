@@ -40,6 +40,22 @@ local RavenDKP_AnimTilesPerSecond		= 12
 local RavenDKP_ClickImageVisible		= false
 local RavenDKP_ClickImageTimer			= 0
 
+local RavenDKP_BubbleImages = {
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_knorr.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_tentacle.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_cleavage.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_stillstand.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_muted.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_bewall.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_hug.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_stick.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_week.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_good.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_fap.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_edlastarana.tga",
+	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_rinse.tga"
+}
+
 local RavenDKP_CLASS_COLORS_HEX = {
 	 ["Druid"] = "FF7D0A",
 	 ["Hunter"] = "ABD473",
@@ -694,16 +710,39 @@ function RavenDKP_UpdatePlayerDKP()
 	RavenDKP_DebugMessage("Updated player's DKP")
 end
 
+function RavenDKP_GetTableSize(t)
+	local count = 0
+	for _ in t do
+		count = count + 1
+	end
+	return count
+end
+
 function RavenDKP_OnRavenClick()
 	local clickImageFrame = getglobal("RavenDKPUIFrameAnimatedImageFrameClickImageFrame")
-	if clickImageFrame then
-		if clickImageFrame:IsVisible() then
-			clickImageFrame:Hide()
-			RavenDKP_ClickImageVisible = false
-		else
-			clickImageFrame:Show()
-			RavenDKP_ClickImageVisible = true
-			RavenDKP_ClickImageTimer = 5
+	if not clickImageFrame then
+		return
+	end
+	
+	if clickImageFrame:IsVisible() then
+		clickImageFrame:Hide()
+		RavenDKP_ClickImageVisible = false
+	else
+		local bubbleCount = 0
+		for k,v in RavenDKP_BubbleImages do
+			bubbleCount = bubbleCount + 1
 		end
+		
+		local randomIndex = math.random(1, bubbleCount)
+		local randomBubble = RavenDKP_BubbleImages[randomIndex]
+		
+		local texture = getglobal("RavenDKPUIFrameAnimatedImageFrameClickImageFrameClickTexture")
+		if texture then
+			texture:SetTexture(randomBubble)
+		end
+		
+		clickImageFrame:Show()
+		RavenDKP_ClickImageVisible = true
+		RavenDKP_ClickImageTimer = 5
 	end
 end
