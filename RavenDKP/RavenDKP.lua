@@ -39,6 +39,11 @@ local RavenDKP_AnimTilesPerSecond		= 12
 
 local RavenDKP_ClickImageVisible		= false
 local RavenDKP_ClickImageTimer			= 0
+local RavenDKP_ItemLoadQueue			= {}
+local RavenDKP_ItemLoadTimeout		= 0
+local RavenDKP_PendingAuctionItem		= nil
+local RavenDKP_PendingAuctionRW		= nil
+local RavenDKP_ItemLoadRefreshTimeout	= 2
 
 local RavenDKP_BubbleImages = {
 	"Interface\\AddOns\\RavenDKP\\Bubbles\\bubble_knorr.tga",
@@ -438,6 +443,52 @@ function RavenDKP_CurrentItemTooltip()
     GameTooltip:Show()
 end
 
+function RavenDKP_CacheItem(itemString, rw)
+	if not itemString then return end
+	
+	RavenDKP_PendingAuctionItem = itemString
+	RavenDKP_PendingAuctionRW = rw
+	
+	local a, b, itemID = string.find(itemString, "item:(%d+)")
+	if itemID then
+		GameTooltip:SetHyperlink("item:" .. itemID .. ":0:0:0:0:0:0:0:0")
+		RavenDKP_ItemLoadQueue[itemString] = true
+		RavenDKP_ItemLoadTimeout = RavenDKP_ItemLoadRefreshTimeout
+	end
+end
+
+function RavenDKP_UpdateItemIfLoaded()
+	if RavenDKP_PendingAuctionItem and RavenDKP_ItemLoadQueue[RavenDKP_PendingAuctionItem] then
+		local a, b, itemID = string.find(RavenDKP_PendingAuctionItem, "item:(%d+)")
+		itemID = tonumber(itemID)
+		local itemName, itemLink, itemQuality, _, _, _, _, _, itemTexture = GetItemInfo(itemID)
+		
+		if itemName then
+			if not itemQuality then itemQuality = 1 end
+			if not itemTexture then itemTexture = "Interface\\Icons\\INV_Misc_Gear_01" end
+			
+			local r, g, b, hex = GetItemQualityColor(itemQuality)
+			RavenDKP_CurrenItemLink = itemLink or (RavenDKP_PendingAuctionItem..":0:0:0:0:0:0:0")
+			
+			local frame = getglobal("RavenDKPUIFrameItem")
+			if frame then
+				local inf = getglobal(frame:GetName().."ItemName")
+				inf:SetText(itemName)
+				inf:SetTextColor(r, g, b, 1)
+				
+				local tf = getglobal(frame:GetName().."ItemTexture")
+				if tf then
+					tf:SetTexture(itemTexture)
+				end
+			end
+			
+			RavenDKP_ItemLoadQueue[RavenDKP_PendingAuctionItem] = nil
+			RavenDKP_PendingAuctionItem = nil
+			RavenDKP_PendingAuctionRW = nil
+		end
+	end
+end
+
 function RavenDKP_OnRaidWarning(event, rw)
 
 	local a,_,str=string.find(rw, "%[SotA%] (.*)")
@@ -456,28 +507,47 @@ function RavenDKP_OnRaidWarning(event, rw)
 		
 		-- Extracts the item string like this: item:12345:0:0:0:0:0:0:0
 		a,_,itemString = string.find(rw, "%[SotA%] Auction open for .*(item:[%d:]*)")
-        local itemName, itemLink, itemQuality, _, _, _, _, _, itemTexture = GetItemInfo(itemString)
+		local b, c, itemID = string.find(itemString, "item:(%d+)")
+		itemID = tonumber(itemID)
+        local itemName, itemLink, itemQuality, _, _, _, _, _, itemTexture = GetItemInfo(itemID)
 
-		-- Edge case fix where GetItemInfo() returns nothing because the game hasn't loaded the item yet
-		if not itemQuality then itemQuality = 1 end
- 		if not itemName then itemName = "Could not load item" end
-		if not itemLink then itemLink = "item:60982:0:0:0:0:0:0:0" end
-		if not itemTexture then itemTexture = "Interface\\Icons\\INV_Misc_Gear_01" end 
-
-        local r, g, b, hex = GetItemQualityColor(itemQuality)
-        RavenDKP_CurrenItemLink = itemLink
-		
-        local frame = getglobal("RavenDKPUIFrameItem")
-        if frame then
-            local inf = getglobal(frame:GetName().."ItemName")
-            inf:SetText(itemName)
-            inf:SetTextColor( r, g, b, 1)
-            
-            local tf = getglobal(frame:GetName().."ItemTexture")
-            if tf then
-                tf:SetTexture(itemTexture)
+        if not itemName or not itemQuality or not itemTexture then
+			RavenDKP_CacheItem(itemString, rw)
+			
+			local r, g, b, hex = GetItemQualityColor(1)
+            RavenDKP_CurrenItemLink = "item:"..itemString
+			
+            local frame = getglobal("RavenDKPUIFrameItem")
+            if frame then
+                local inf = getglobal(frame:GetName().."ItemName")
+                inf:SetText("Loading item...")
+                inf:SetTextColor(1, 1, 1, 1)
+                
+                local tf = getglobal(frame:GetName().."ItemTexture")
+                if tf then
+                    tf:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+                end
+                frame:Show()
             end
-            frame:Show()
+        else
+			if not itemQuality then itemQuality = 1 end
+			if not itemTexture then itemTexture = "Interface\\Icons\\INV_Misc_Gear_01" end
+
+	        local r, g, b, hex = GetItemQualityColor(itemQuality)
+	        RavenDKP_CurrenItemLink = itemLink or ("item:"..itemString..":0:0:0:0:0:0:0")
+			
+	        local frame = getglobal("RavenDKPUIFrameItem")
+	        if frame then
+	            local inf = getglobal(frame:GetName().."ItemName")
+	            inf:SetText(itemName)
+	            inf:SetTextColor( r, g, b, 1)
+	            
+	            local tf = getglobal(frame:GetName().."ItemTexture")
+	            if tf then
+	                tf:SetTexture(itemTexture)
+	            end
+	            frame:Show()
+	        end
         end
 		
 		RavenDKP_OpenUI()
@@ -591,6 +661,27 @@ end
 
 
 function RavenDKP_OnUpdate(elapsed)
+	if RavenDKP_PendingAuctionItem then
+		RavenDKP_ItemLoadTimeout = RavenDKP_ItemLoadTimeout - elapsed
+		
+		local allLoaded = true
+		for item in pairs(RavenDKP_ItemLoadQueue) do
+			local a, b, itemID = string.find(item, "item:(%d+)")
+			itemID = tonumber(itemID)
+			if not GetItemInfo(itemID) then
+				allLoaded = false
+				break
+			end
+		end
+		
+		if allLoaded or RavenDKP_ItemLoadTimeout <= 0 then
+			RavenDKP_UpdateItemIfLoaded()
+			for k in pairs(RavenDKP_ItemLoadQueue) do
+				RavenDKP_ItemLoadQueue[k] = nil
+			end
+		end
+	end
+	
 	if RavenDKP_DKPUpdateQueued == 1 then
 		RavenDKP_TimeSinceDKPUpdate = RavenDKP_TimeSinceDKPUpdate + elapsed
 		if RavenDKP_TimeSinceDKPUpdate > 5 then
