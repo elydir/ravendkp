@@ -1,7 +1,7 @@
 ## Interface: 11200
 ## Title: RavenDKP
 ## Notes: DKP Auction window, for use with SotA
-## Author: Texanranger
-## Version: 1.1
+## Author: ravens
+## Version: 2.1
 
 RavenDKP.xml
