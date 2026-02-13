@@ -2,6 +2,8 @@
 ## Title: RavenDKP
 ## Notes: DKP Auction window, for use with SotA
 ## Author: ravens
-## Version: 2.1
+## Version: 2.1.4
+## SavedVariables: RavenDKPDB
 
 RavenDKP.xml
+versioncheck.lua

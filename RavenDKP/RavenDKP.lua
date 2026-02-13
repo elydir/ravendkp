@@ -104,6 +104,12 @@ function RavenDKP_OnLoad()
 	if animFrame then
 		animFrame:Hide()
 	end
+	
+	local versionText = getglobal("RavenDKPUIFrameVersionText")
+	if versionText then
+	    local addonVersion = GetAddOnMetadata(RavenDKP_Identifier, "Version")
+		versionText:SetText("v." .. addonVersion)
+	end
 end
 
 function RavenDKP_DisableAllBidButtons()
